@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(new MyApp());
@@ -18,16 +21,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -35,31 +28,42 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  var _ipAddress = 'Unknown';
 
-  void _incrementCounter() {
+  _getIPAddress() async {
+    var url = 'https://httpbin.org/ip';
+    var httpClient = new HttpClient();
+
+    String result;
+    try {
+      var request = await httpClient.getUrl(Uri.parse(url));
+      var response = await request.close();
+      if (response.statusCode == HttpStatus.OK) {
+        var jsonString = await response.transform(utf8.decoder).join();
+        var data = json.decode(jsonString);
+        result = data['origin'];
+      } else {
+        result =
+        'Error getting IP address:\nHttp status ${response.statusCode}';
+      }
+    } catch (exception) {
+      result = 'Failed getting IP address';
+    }
+
+    // If the widget was removed from the tree while the message was in flight,
+    // we want to discard the reply rather than calling setState to update our
+    // non-existent appearance.
+    if (!mounted) return;
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _ipAddress = result;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return new Scaffold(
       appBar: new AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: new Text(widget.title),
       ),
       body: new ListView(
@@ -72,108 +76,74 @@ class _MyHomePageState extends State<MyHomePage> {
             child: new Text(
                 "Farmion hat ab jetzt eine App, diese kann nichts und muss gewartet werden und aktiv gehalten werden."),
           ),
-          new Card(
-              color: const Color.fromRGBO(138, 121, 103, 1.0),
-              child: new Column(
-                children: <Widget>[
-                  new Row(
-                    children: <Widget>[
-                      new Icon(Icons.face),
-                      new Text("Marco"),
-                      new Icon(Icons.location_on),
-                      new Text("Reinfeld"),
-                    ],
-                  ),
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      new Container(
-                        child: new Text(
-                          "Ich bin gerade am Hünengrab, kommt wer?",
-                          softWrap: true,
-                        ),
-                      ),
-                      new Column(
-                        children: <Widget>[
-                          new Icon(Icons.arrow_upward),
-                          new Text("3"),
-                          new Icon(Icons.arrow_downward)
-                        ],
-                      )
-                    ],
-                  ),
-                  new Icon(Icons.menu)
-                ],
-              )),
-          new Card(
-              color: const Color.fromRGBO(138, 121, 103, 1.0),
-              child: new Column(
-                children: <Widget>[
-                  new Row(
-                    children: <Widget>[
-                      new Icon(Icons.face),
-                      new Text("Marco"),
-                      new Icon(Icons.location_on),
-                      new Text("Reinfeld"),
-                    ],
-                  ),
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      new Container(
-                        child: new Text(
-                          "Heuute wer Lust auf DSA?",
-                          softWrap: true,
-                        ),
-                      ),
-                      new Column(
-                        children: <Widget>[
-                          new Icon(Icons.arrow_upward),
-                          new Text("3"),
-                          new Icon(Icons.arrow_downward)
-                        ],
-                      )
-                    ],
-                  ),
-                  new Icon(Icons.menu)
-                ],
-              )),
-          new Card(
-              color: const Color.fromRGBO(138, 121, 103, 1.0),
-              child: new Column(
-                children: <Widget>[
-                  new Row(
-                    children: <Widget>[
-                      new Icon(Icons.face),
-                      new Text("Marco"),
-                      new Icon(Icons.location_on),
-                      new Text("Reinfeld"),
-                    ],
-                  ),
-                  new Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      new Container(
-                        child: new Text(
-                          "Lageraktion jede hilfe ist wilkommen?",
-                          softWrap: true,
-                        ),
-                      ),
-                      new Column(
-                        children: <Widget>[
-                          new Icon(Icons.arrow_upward),
-                          new Text("3"),
-                          new Icon(Icons.arrow_downward)
-                        ],
-                      )
-                    ],
-                  ),
-                  new Icon(Icons.menu)
-                ],
-              )),
-        ],
+          buildCard(
+              "Marco Gabrecht", "Reinfeld", "Heute treffen beim Hünengrab?", 5),
+          buildCard(
+              "Marco Gabrecht",
+              "Reinfeld",
+              "Ich habe mal wieder lust auf DSA, hat jemand auch Lust? Ich wäre auch für D&D und SchadowRun zu haben, habt ihr eine Gruppe doer eher nicht?",
+              5),
+          buildCard("Marco Gabrecht", "Reinfeld",
+              "Hallllo, dies ist ein Test wie geht es ich hoffe es klappt", 5),
+          buildCard("Marco Gabrecht", "Reinfeld",
+              "Hallllo, dies ist ein Test wie geht es ich hoffe es klappt", 5),
+          new Center(
+            child: new Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                new Text('Your current IP address is:'),
+                new Text('$_ipAddress.'),
+                new RaisedButton(
+                  onPressed: _getIPAddress,
+                  child: new Text('Get IP address'),
+                ),
+              ],
+            ),
+          ),],
       ),
       backgroundColor: const Color.fromRGBO(193, 175, 158, 1.0),
     );
+  }
+
+  Widget buildCard(String name, String ort, String text, int comments) {
+    return new Card(
+        color: const Color.fromRGBO(138, 121, 103, 1.0),
+        child: new Column(
+          children: <Widget>[
+            new Container(
+              padding: new EdgeInsets.all(5.0),
+              child: new Row(
+                children: <Widget>[
+                  new Icon(Icons.face),
+                  new Text(name),
+                  new Icon(Icons.location_on),
+                  new Text(ort),
+                ],
+              ),
+            ),
+            new Stack(
+              children: <Widget>[
+                new Container(
+                  margin: new EdgeInsets.all(10.0),
+                  child: new Text(
+                    text,
+                    softWrap: true,
+                  ),
+                ),
+                new Container(
+                  alignment: new Alignment(1.0, 0.0),
+                  child: new Column(
+                    children: <Widget>[
+                      new Icon(Icons.arrow_upward),
+                      new Text("$comments"),
+                      new Icon(Icons.arrow_downward)
+                    ],
+                  ),
+                )
+              ],
+            ),
+            new Icon(Icons.menu)
+          ],
+        ));
   }
 }
