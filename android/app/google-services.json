@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "878948484454",
+    "firebase_url": "https://farmion-ev.firebaseio.com",
+    "project_id": "farmion-ev",
+    "storage_bucket": "farmion-ev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878948484454:android:6ef9357f80bcf391",
+        "android_client_info": {
+          "package_name": "eu.farmion"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "878948484454-ci6eedsls8vn5hpphp8o2f66snvnbk8i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD889whDxDupQIdmXlqnNel66WCzF4gwzU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

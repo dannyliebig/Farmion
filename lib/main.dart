@@ -1,7 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/ui/firebase_animated_list.dart';
+import 'dart:async';
+
+final analytics = new FirebaseAnalytics();
+final reference = FirebaseDatabase.instance.reference().child('messages');
 
 void main() => runApp(new MyApp());
 
@@ -28,37 +34,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _ipAddress = 'Unknown';
-
-  _getIPAddress() async {
-    var url = 'https://httpbin.org/ip';
-    var httpClient = new HttpClient();
-
-    String result;
-    try {
-      var request = await httpClient.getUrl(Uri.parse(url));
-      var response = await request.close();
-      if (response.statusCode == HttpStatus.OK) {
-        var jsonString = await response.transform(utf8.decoder).join();
-        var data = json.decode(jsonString);
-        result = data['origin'];
-      } else {
-        result =
-        'Error getting IP address:\nHttp status ${response.statusCode}';
-      }
-    } catch (exception) {
-      result = 'Failed getting IP address';
-    }
-
-    // If the widget was removed from the tree while the message was in flight,
-    // we want to discard the reply rather than calling setState to update our
-    // non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _ipAddress = result;
-    });
-  }
+  final TextEditingController _textController = new TextEditingController();
+  bool _isComposing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -66,43 +43,106 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: new AppBar(
         title: new Text(widget.title),
       ),
-      body: new ListView(
-        children: <Widget>[
-          new Image(
-            image: new AssetImage('images/farmionLogo.jpg'),
-          ),
-          new Container(
-            padding: new EdgeInsets.all(10.0),
-            child: new Text(
-                "Farmion hat ab jetzt eine App, diese kann nichts und muss gewartet werden und aktiv gehalten werden."),
-          ),
-          buildCard(
-              "Marco Gabrecht", "Reinfeld", "Heute treffen beim Hünengrab?", 5),
-          buildCard(
-              "Marco Gabrecht",
-              "Reinfeld",
-              "Ich habe mal wieder lust auf DSA, hat jemand auch Lust? Ich wäre auch für D&D und SchadowRun zu haben, habt ihr eine Gruppe doer eher nicht?",
-              5),
-          buildCard("Marco Gabrecht", "Reinfeld",
-              "Hallllo, dies ist ein Test wie geht es ich hoffe es klappt", 5),
-          buildCard("Marco Gabrecht", "Reinfeld",
-              "Hallllo, dies ist ein Test wie geht es ich hoffe es klappt", 5),
-          new Center(
-            child: new Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new Text('Your current IP address is:'),
-                new Text('$_ipAddress.'),
-                new RaisedButton(
-                  onPressed: _getIPAddress,
-                  child: new Text('Get IP address'),
+      body:
+          new Column(
+            children: <Widget>[
+              new Flexible(
+                child: new FirebaseAnimatedList(
+                  query: reference,
+                  sort: (a, b) => b.key.compareTo(a.key),
+                  padding: new EdgeInsets.all(8.0),
+                  reverse: false,
+                  itemBuilder:
+                      (_, DataSnapshot snapshot, Animation<double> animation) {
+                    return new MyCard(snapshot: snapshot, animation: animation);
+                  },
                 ),
-              ],
-            ),
-          ),],
-      ),
+              ),
+              new Divider(height: 1.0),
+              new Container(
+                decoration:
+                    new BoxDecoration(color: Theme.of(context).cardColor),
+                child: _buildTextComposer(),
+              ),
+            ],
+          ),
+
       backgroundColor: const Color.fromRGBO(193, 175, 158, 1.0),
     );
+  }
+
+  Widget _buildTextComposer() {
+    return new IconTheme(
+      //new
+      data: new IconThemeData(color: Theme.of(context).accentColor), //new
+      child: new Container(
+        //modified
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: new Row(
+          children: <Widget>[
+            new Flexible(
+              child: new TextField(
+                controller: _textController,
+                onChanged: (String text) {
+                  setState(() {
+                    _isComposing = text.length > 0;
+                  });
+                },
+                onSubmitted: _handleSubmitted,
+                decoration:
+                    new InputDecoration.collapsed(hintText: "Send a message"),
+              ),
+            ),
+            new Container(
+                margin: new EdgeInsets.symmetric(horizontal: 4.0),
+                child: new IconButton(
+                  //modified
+                  icon: new Icon(Icons.send),
+                  onPressed: _isComposing
+                      ? () => _handleSubmitted(_textController.text)
+                      : null,
+                )),
+          ],
+        ),
+      ), //new
+    );
+  }
+
+  Future<Null> _handleSubmitted(String text) async {
+    _textController.clear();
+    setState(() {
+      _isComposing = false; //new
+    });
+    _sendMessage(text: text);
+  }
+
+  void _sendMessage({String text}) {
+    reference.push().set({
+      //new
+      'text': text, //new
+      'senderName': "Dein Name",
+      'senderLocation': "Dein Ort",
+    }); //new
+    analytics.logEvent(name: 'send_message');
+  }
+}
+
+class MyCard extends StatelessWidget {
+  MyCard({this.snapshot, this.animation}); // modified
+  final DataSnapshot snapshot; // modified
+  final Animation animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return new SizeTransition(
+        //new
+        sizeFactor: new CurvedAnimation(
+            //new
+            parent: animation,
+            curve: Curves.easeOut),
+        axisAlignment: 0.0, //new
+        child: buildCard(snapshot.value['senderName'],
+            snapshot.value['senderLocation'], snapshot.value['text'], 3));
   }
 
   Widget buildCard(String name, String ort, String text, int comments) {
