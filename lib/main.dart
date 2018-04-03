@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primaryColor: const Color.fromRGBO(158, 141, 123, 1.0),
       ),
-      home: new Dashbord(title: 'Farmion Dashbord'),
+      home: new MenueDash(title: 'Farmion Dashbord'),
     );
   }
 }
