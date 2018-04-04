@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:farmion/CreateCards.dart';
 import 'package:farmion/GoogleConnection.dart';
+import 'package:farmion/GridElement.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -23,7 +24,7 @@ class _MyHomePageState extends State<MenueDash> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    controler = new TabController(length: 3, vsync: this);
+    controler = new TabController(length: 4, vsync: this);
   }
 
   @override
@@ -40,9 +41,10 @@ class _MyHomePageState extends State<MenueDash> with TickerProviderStateMixin {
         bottom: new TabBar(controller: controler
             ,tabs: <Tab>[
           new Tab(icon: new Icon(Icons.menu)),
+          new Tab(icon: new Icon(Icons.image)),
           new Tab(icon: new Icon(Icons.face)),
           new Tab(
-            icon: new Icon(Icons.menu),
+            icon: new Icon(Icons.image),
           )
         ]),
       ),
@@ -50,12 +52,56 @@ class _MyHomePageState extends State<MenueDash> with TickerProviderStateMixin {
           controller: controler,
           children: <Widget>[
             new Dashbord(),
+        new GridListDemo(),
           new Center(child: new Text("Dein Bereich"),),
             new Center(child: new Text("Veranstaltungen"),),
             //new Dashbord(),
             //new Dashbord()
       ]),
       backgroundColor: const Color.fromRGBO(193, 175, 158, 1.0),
+    );
+  }
+}
+
+class Gallery extends StatefulWidget {
+  Gallery({Key key, this.title}) : super(key: key);
+  final String title;
+
+  @override
+  GalleryState createState() => new GalleryState();
+
+}
+
+class GalleryState extends State<Gallery> with TickerProviderStateMixin {
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      body: new GridView.count(
+        primary: false,
+        padding: const EdgeInsets.all(20.0),
+        crossAxisSpacing: 10.0,
+        crossAxisCount: 2,
+        children: <Widget>[
+          const Text('He\'d have you all unravel at the'),
+          const Text('Heed not the rabble'),
+          const Text('Sound of screams but the'),
+          const Text('Who scream'),
+          const Text('Revolution is coming...'),
+          const Text('Revolution, they...'),
+          new GridListDemo(),
+        ],
+      ),
+      backgroundColor: const Color.fromRGBO(193, 175, 158, 1.0),
+      //bottomNavigationBar: botNavBar,
+      floatingActionButton: new FloatingActionButton(
+          child: const Icon(Icons.edit),
+          onPressed: () {
+            Navigator.push(
+              context,
+              new MaterialPageRoute(builder: (context) => new CreateCard()),
+            );
+          }),
     );
   }
 }
