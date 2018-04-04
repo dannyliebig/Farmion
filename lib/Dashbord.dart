@@ -1,13 +1,12 @@
-import 'dart:convert';
-import 'dart:io';
+import 'dart:async';
+
 import 'package:farmion/CreateCards.dart';
+import 'package:farmion/FlicrAPI.dart';
 import 'package:farmion/GoogleConnection.dart';
 import 'package:farmion/GridElement.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'dart:async';
 
 class MenueDash extends StatefulWidget {
   MenueDash({Key key, this.title}) : super(key: key);
@@ -18,7 +17,6 @@ class MenueDash extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MenueDash> with TickerProviderStateMixin {
-
   TabController controler;
 
   @override
@@ -38,8 +36,7 @@ class _MyHomePageState extends State<MenueDash> with TickerProviderStateMixin {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text(widget.title),
-        bottom: new TabBar(controller: controler
-            ,tabs: <Tab>[
+        bottom: new TabBar(controller: controler, tabs: <Tab>[
           new Tab(icon: new Icon(Icons.menu)),
           new Tab(icon: new Icon(Icons.image)),
           new Tab(icon: new Icon(Icons.face)),
@@ -48,15 +45,17 @@ class _MyHomePageState extends State<MenueDash> with TickerProviderStateMixin {
           )
         ]),
       ),
-      body: new TabBarView(
-          controller: controler,
-          children: <Widget>[
-            new Dashbord(),
+      body: new TabBarView(controller: controler, children: <Widget>[
+        new Dashbord(),
         new GridListDemo(),
-          new Center(child: new Text("Dein Bereich"),),
-            new Center(child: new Text("Veranstaltungen"),),
-            //new Dashbord(),
-            //new Dashbord()
+        new Center(
+          child: new Text("Dein Bereich"),
+        ),
+        new Center(
+          child: new Text("Veranstaltungen"),
+        ),
+        //new Dashbord(),
+        //new Dashbord()
       ]),
       backgroundColor: const Color.fromRGBO(193, 175, 158, 1.0),
     );
@@ -69,11 +68,9 @@ class Gallery extends StatefulWidget {
 
   @override
   GalleryState createState() => new GalleryState();
-
 }
 
 class GalleryState extends State<Gallery> with TickerProviderStateMixin {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -106,23 +103,27 @@ class GalleryState extends State<Gallery> with TickerProviderStateMixin {
   }
 }
 
-
 class Dashbord extends StatefulWidget {
   Dashbord({Key key, this.title}) : super(key: key);
   final String title;
 
   @override
   DashbordState createState() => new DashbordState();
-
 }
 
 class DashbordState extends State<Dashbord> with TickerProviderStateMixin {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       body: new Column(
         children: <Widget>[
+          new FutureBuilder(
+              future: getGallerys(),
+              builder: (BuildContext context, AsyncSnapshot response) {
+                return (response.hasData == false
+                    ? new Text("warte auf Daten")
+                    : new Text(response.data));
+              }),
           new Divider(height: 1.0),
           new Flexible(
             child: new FirebaseAnimatedList(

@@ -220,6 +220,7 @@ class GridListDemo extends StatefulWidget {
 }
 
 class GridListDemoState extends State<GridListDemo> {
+
   GridDemoTileStyle _tileStyle = GridDemoTileStyle.twoLine;
 
   List<Photo> photos = <Photo>[
@@ -313,4 +314,5 @@ class GridListDemoState extends State<GridListDemo> {
       ),
     );
   }
+
 }
