@@ -1,7 +1,8 @@
 import 'package:farmion/Dashbord.dart';
 import 'package:flutter/material.dart';
+/* duplicated
 import 'package:flutter/material.dart';
-
+*/
 
 
 void main() => runApp(new MyApp());
